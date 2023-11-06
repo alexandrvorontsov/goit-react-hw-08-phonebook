@@ -1,54 +1,61 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { requestContacts, requestDeleteContacts } from 'redux/operations';
-import { selectContacts } from 'redux/selectors';
+import css from './ContactList.module.css';
+
+import { useEffect } from 'react';
 import {
-  BodyList,
-  ListItem,
-  ListButton,
-  MessageLoading,
-  MessageError,
-} from './ContactList.styled';
+  fetchContacts,
+  removeContacts,
+} from 'redux/phonebook/phonebook-operations';
+import {
+  selectContacts,
+  selectFilter,
+  selectItems,
+} from 'redux/phonebook/phonebook-selectors';
 
 export const ContactList = () => {
-  const filter = useSelector(state => state.filter);
-  const { items, isLoading, error } = useSelector(selectContacts);
   const dispatch = useDispatch();
 
+  const filtered = useSelector(selectFilter);
+  const { isLoading, error } = useSelector(selectContacts);
+  const items = useSelector(selectItems);
   useEffect(() => {
-    dispatch(requestContacts());
+    dispatch(fetchContacts());
   }, [dispatch]);
 
-  const handleDeleteContact = evt => {
-    dispatch(requestDeleteContacts(evt.target.id));
+  const handleRemoveContact = evt => {
+    dispatch(removeContacts(evt.target.id));
   };
 
   return (
-    <div>
-      <BodyList>
-        {items !== null &&
+    <>
+      {isLoading && <p className={css.name}>Loading contacts...</p>}
+      {error && <p className={css.number}>{error}</p>}
+      <ul className={css.contactList}>
+        {items?.length > 0 &&
           items
             .filter(contact =>
-              contact?.name?.toLowerCase().includes(filter.toLowerCase())
+              contact?.name.toLowerCase().includes(filtered?.toLowerCase())
             )
-            .map(({ id, name, number }) => {
+            .map(contact => {
               return (
-                <ListItem key={id}>
-                  <span>{name}: </span>
-                  <span>{number}</span>
-                  <ListButton
+                <li className={css.item} key={contact.id}>
+                  <span className={css.name}>{contact.name}: </span>
+                  <a className={css.number} href={`tel:${contact.number}`}>
+                    {contact.number}
+                  </a>
+                  <button
+                    onClick={handleRemoveContact}
+                    id={contact.id}
+                    className={css.button}
                     type="button"
-                    id={id}
-                    onClick={handleDeleteContact}
                   >
                     Delete
-                  </ListButton>
-                </ListItem>
+                  </button>
+                </li>
               );
             })}
-      </BodyList>
-      {isLoading && <MessageLoading>Loading contacts...</MessageLoading>}
-      {error && <MessageError>{error}</MessageError>}
-    </div>
+      </ul>
+    </>
   );
 };

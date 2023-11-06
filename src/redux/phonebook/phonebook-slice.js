@@ -1,62 +1,58 @@
 import { createSlice } from '@reduxjs/toolkit';
 import {
-  requestContacts,
-  requestAddContact,
-  requestDeleteContacts,
-} from './operations';
+  fetchContacts,
+  addContact,
+  removeContacts,
+} from './phonebook-operations';
 
-const INITIAL_STATE = {
+const initialState = {
   contacts: {
     items: [],
     isLoading: false,
     error: null,
   },
   filter: '',
-  nameData: '',
-  numberData: '',
 };
 
 export const phoneBookSlice = createSlice({
   name: 'phonebook',
-  initialState: INITIAL_STATE,
+  initialState: initialState,
   extraReducers: {
-    [requestContacts.pending](state) {
+    [fetchContacts.pending](state, action) {
       state.contacts.isLoading = true;
     },
-    [requestContacts.fulfilled](state, action) {
+    [fetchContacts.fulfilled](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = null;
       state.contacts.items = action.payload;
     },
-    [requestContacts.rejected](state, action) {
+    [fetchContacts.rejected](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = action.payload;
     },
-    [requestAddContact.pending](state) {
+    [addContact.pending](state, action) {
       state.contacts.isLoading = true;
     },
-    [requestAddContact.fulfilled](state, action) {
+    [addContact.fulfilled](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = null;
-      state.contacts.items.unshift(action.payload); // початок списку
-      // state.contacts.items.push(action.payload); кінець списку
-      // state.contacts.items = [...state.contacts.items, action.payload]; кінець списку
+      state.contacts.items = [...state.contacts.items, action.payload];
     },
-    [requestAddContact.rejected](state, action) {
+    [addContact.rejected](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = action.payload;
     },
-    [requestDeleteContacts.pending](state) {
+    [removeContacts.pending](state, action) {
       state.contacts.isLoading = true;
     },
-    [requestDeleteContacts.fulfilled](state, action) {
+    [removeContacts.fulfilled](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = null;
       state.contacts.items = state.contacts.items.filter(
         contact => contact.id !== action.payload.id
       );
     },
-    [requestDeleteContacts.rejected](state, action) {
+    [removeContacts.rejected](state, action) {
       state.contacts.isLoading = false;
       state.contacts.error = action.payload;
     },
@@ -65,15 +61,7 @@ export const phoneBookSlice = createSlice({
     filterContact: (state, action) => {
       state.filter = action.payload;
     },
-    setNameData: (state, action) => {
-      state.nameData = action.payload;
-    },
-    setNumberData: (state, action) => {
-      state.numberData = action.payload;
-    },
   },
 });
 export const { filterContact } = phoneBookSlice.actions;
-export const { setNameData } = phoneBookSlice.actions;
-export const { setNumberData } = phoneBookSlice.actions;
 export const contactReducer = phoneBookSlice.reducer;
